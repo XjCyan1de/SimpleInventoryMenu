@@ -20,13 +20,14 @@ import java.util.function.Consumer
 open class InventoryMenu
 private constructor(
         val plugin: Plugin,
+        val player: Player,
         val inventoryType: InventoryType,
         val rows: Int,
         val title: String
 ) : InventoryHolder, Listener {
-    constructor(plugin: Plugin, inventoryType: InventoryType, title: String) : this(plugin, inventoryType, 3, title)
+    constructor(plugin: Plugin, player: Player, inventoryType: InventoryType, title: String) : this(plugin, player, inventoryType, 3, title)
 
-    constructor(plugin: Plugin, rows: Int, title: String) : this(plugin, InventoryType.CHEST, rows, title)
+    constructor(plugin: Plugin, player: Player, rows: Int, title: String) : this(plugin, player, InventoryType.CHEST, rows, title)
 
     private val _inventory = if (inventoryType == InventoryType.CHEST)
         Bukkit.createInventory(this, rows * 9, title) else
@@ -113,7 +114,7 @@ private constructor(
     fun addButton(slot: Int, itemStack: ItemStack, clickHandler: Consumer<InventoryClickEvent> = Consumer {}): InventoryMenu =
             addButton(slot, itemStack) { clickHandler.accept(this) }
 
-    fun open(player: Player) {
+    fun open() {
         inventory.clear()
         buttons.forEach { (slot, button) ->
             inventory.setItem(slot, button.itemStack)
@@ -164,15 +165,21 @@ data class InventoryButton(
 val InventoryClickEvent.player: Player get() = whoClicked as Player
 
 @JvmName("PluginInventoryMenu")
-fun Plugin.InventoryMenu(inventoryType: InventoryType, title: String, builder: InventoryMenu.() -> Unit = {}): InventoryMenu =
-        InventoryMenu(this, inventoryType, title, builder)
-
-fun InventoryMenu(plugin: Plugin, inventoryType: InventoryType, title: String, builder: InventoryMenu.() -> Unit = {}): InventoryMenu =
-        InventoryMenu(plugin, inventoryType, title).apply(builder)
+fun Plugin.InventoryMenu(player: Player, inventoryType: InventoryType, title: String, builder: InventoryMenu.() -> Unit = {}): InventoryMenu =
+        InventoryMenu(this, player, inventoryType, title, builder)
 
 @JvmName("PluginInventoryMenu")
-fun Plugin.InventoryMenu(rows: Int, title: String, builder: InventoryMenu.() -> Unit = {}): InventoryMenu =
-        InventoryMenu(this, rows, title, builder)
+fun Plugin.InventoryMenu(player: Player, rows: Int, title: String, builder: InventoryMenu.() -> Unit = {}): InventoryMenu =
+        InventoryMenu(this, player, rows, title, builder)
 
-fun InventoryMenu(plugin: Plugin, rows: Int, title: String, builder: InventoryMenu.() -> Unit = {}): InventoryMenu =
-        InventoryMenu(plugin, rows, title).apply(builder)
+fun InventoryMenu(plugin: Plugin, player: Player, inventoryType: InventoryType, title: String, builder: InventoryMenu.() -> Unit = {}): InventoryMenu =
+        InventoryMenu(plugin, player, inventoryType, title).apply(builder)
+
+fun InventoryMenu(plugin: Plugin, player: Player, rows: Int, title: String, builder: InventoryMenu.() -> Unit = {}): InventoryMenu =
+        InventoryMenu(plugin, player, rows, title).apply(builder)
+
+fun InventoryMenu.InventoryMenu(inventoryType: InventoryType, title: String, builder: InventoryMenu.() -> Unit = {}): InventoryMenu =
+        InventoryMenu(plugin, player, inventoryType, title, builder)
+
+fun InventoryMenu.InventoryMenu(rows: Int, title: String, builder: InventoryMenu.() -> Unit = {}): InventoryMenu =
+        InventoryMenu(plugin, player, rows, title, builder)
