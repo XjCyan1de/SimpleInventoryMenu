@@ -1,4 +1,5 @@
-# Simple Inventory Menu [![](https://jitpack.io/v/XjCyan1de/SimpleInventoryMenu.svg)](https://jitpack.io/#XjCyan1de/SimpleInventoryMenu)
+# Simple Inventory Menu [![](https://jitpack.io/v/XjCyan1de/SimpleInventoryMenu.svg)](https://jitpack.io/#XjCyan1de/SimpleInventoryMenu)  [![](https://jitci.com/gh/XjCyan1de/SimpleInventoryMenu/svg)](https://jitci.com/gh/XjCyan1de/SimpleInventoryMenu)
+
 Simple Inventory Menu. Nothing else.
 
 #### Gradle Kotlin DSL:
