@@ -17,7 +17,7 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.plugin.Plugin
 import java.util.function.Consumer
 
-class InventoryMenu
+open class InventoryMenu
 private constructor(
         val plugin: Plugin,
         val inventoryType: InventoryType,
