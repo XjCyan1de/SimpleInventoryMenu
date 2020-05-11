@@ -35,6 +35,9 @@ private constructor(
 
     override fun getInventory(): Inventory = _inventory
 
+    fun addButton(material: Material, text: String, clickHandler: InventoryClickEvent.() -> Unit = {}): InventoryMenu =
+            addButton(material, text.split("\n"), clickHandler)
+
     fun addButton(material: Material, vararg text: String, clickHandler: InventoryClickEvent.() -> Unit = {}): InventoryMenu =
             addButton(material, text.toList(), clickHandler)
 
@@ -45,6 +48,10 @@ private constructor(
 
     fun addButton(itemStack: ItemStack, clickHandler: InventoryClickEvent.() -> Unit = {}): InventoryMenu =
             addButton(inventory.firstEmpty(), itemStack, clickHandler)
+
+    @JvmOverloads
+    fun addButton(material: Material, text: String, clickHandler: Consumer<InventoryClickEvent> = Consumer {}): InventoryMenu =
+            addButton(material, text.split("\n")) { clickHandler.accept(this) }
 
     @JvmOverloads
     fun addButton(material: Material, vararg text: String, clickHandler: Consumer<InventoryClickEvent> = Consumer {}): InventoryMenu =
@@ -74,6 +81,9 @@ private constructor(
      * | 81 82 83 84 85 86 87 88 89 |
      * |----------------------------|
      */
+    fun addButton(slot: Int, material: Material, text: String, clickHandler: InventoryClickEvent.() -> Unit = {}): InventoryMenu =
+            addButton(slot, material, text.split("\n"), clickHandler)
+
     fun addButton(slot: Int, material: Material, vararg text: String, clickHandler: InventoryClickEvent.() -> Unit = {}): InventoryMenu =
             addButton(slot, material, text.toList(), clickHandler)
 
@@ -86,6 +96,10 @@ private constructor(
         val guiItem = InventoryButton(itemStack, clickHandler)
         buttons[slot] = guiItem
     }
+
+    @JvmOverloads
+    fun addButton(slot: Int, material: Material, text: String, clickHandler: Consumer<InventoryClickEvent> = Consumer {}): InventoryMenu =
+            addButton(slot, material, text.split("\n")) { clickHandler.accept(this) }
 
     @JvmOverloads
     fun addButton(slot: Int, material: Material, vararg text: String, clickHandler: Consumer<InventoryClickEvent> = Consumer {}): InventoryMenu =
