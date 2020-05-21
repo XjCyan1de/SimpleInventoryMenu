@@ -151,7 +151,7 @@ private constructor(
         val itemMeta = itemStack.itemMeta
         itemMeta.addItemFlags(*ItemFlag.values())
         if (text.isNotEmpty()) itemMeta.setDisplayName(ChatColor.RESET.toString() + ChatColor.translateAlternateColorCodes('&', text[0]))
-        if (text.size > 1) itemMeta.lore = text.subList(1, text.size).map { ChatColor.RESET.toString() + ChatColor.translateAlternateColorCodes('&', text[0]) }
+        if (text.size > 1) itemMeta.lore = text.subList(1, text.size).map { ChatColor.RESET.toString() + ChatColor.translateAlternateColorCodes('&', it) }
         itemStack.itemMeta = itemMeta
         return itemStack
     }
