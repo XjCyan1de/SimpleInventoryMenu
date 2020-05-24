@@ -23,11 +23,12 @@ private constructor(
         val player: Player,
         val inventoryType: InventoryType,
         val rows: Int,
-        val title: String
+        val title: String,
+        private val builder: InventoryMenu.() -> Unit = {}
 ) : InventoryHolder, Listener {
-    constructor(plugin: Plugin, player: Player, inventoryType: InventoryType, title: String) : this(plugin, player, inventoryType, 3, title)
+    constructor(plugin: Plugin, player: Player, inventoryType: InventoryType, title: String, builder: InventoryMenu.() -> Unit = {}) : this(plugin, player, inventoryType, 3, title, builder)
 
-    constructor(plugin: Plugin, player: Player, rows: Int, title: String) : this(plugin, player, InventoryType.CHEST, rows, title)
+    constructor(plugin: Plugin, player: Player, rows: Int, title: String, builder: InventoryMenu.() -> Unit = {}) : this(plugin, player, InventoryType.CHEST, rows, title, builder)
 
     private val _inventory = if (inventoryType == InventoryType.CHEST)
         Bukkit.createInventory(this, rows * 9, title) else
@@ -35,6 +36,9 @@ private constructor(
     private val buttons = HashMap<Int, InventoryButton>()
 
     override fun getInventory(): Inventory = _inventory
+
+    fun addButton(button: InventoryButton): InventoryMenu =
+            addButton(firstEmpty(), button)
 
     fun addButton(material: Material, text: String, clickHandler: InventoryClickEvent.() -> Unit = {}): InventoryMenu =
             addButton(material, text.split("\n"), clickHandler)
@@ -48,7 +52,7 @@ private constructor(
     }
 
     fun addButton(itemStack: ItemStack, clickHandler: InventoryClickEvent.() -> Unit = {}): InventoryMenu =
-            addButton(inventory.firstEmpty(), itemStack, clickHandler)
+            addButton(firstEmpty(), itemStack, clickHandler)
 
     @JvmOverloads
     fun addButton(material: Material, text: String, clickHandler: Consumer<InventoryClickEvent> = Consumer {}): InventoryMenu =
@@ -82,6 +86,11 @@ private constructor(
      * | 81 82 83 84 85 86 87 88 89 |
      * |----------------------------|
      */
+
+    fun addButton(slot: Int, button: InventoryButton): InventoryMenu = apply {
+        buttons[slot] = button
+    }
+
     fun addButton(slot: Int, material: Material, text: String, clickHandler: InventoryClickEvent.() -> Unit = {}): InventoryMenu =
             addButton(slot, material, text.split("\n"), clickHandler)
 
@@ -94,8 +103,8 @@ private constructor(
     }
 
     fun addButton(slot: Int, itemStack: ItemStack, clickHandler: InventoryClickEvent.() -> Unit = {}): InventoryMenu = apply {
-        val guiItem = InventoryButton(itemStack, clickHandler)
-        buttons[slot] = guiItem
+        val button = InventoryButton(itemStack, clickHandler)
+        addButton(slot, button)
     }
 
     @JvmOverloads
@@ -114,8 +123,21 @@ private constructor(
     fun addButton(slot: Int, itemStack: ItemStack, clickHandler: Consumer<InventoryClickEvent> = Consumer {}): InventoryMenu =
             addButton(slot, itemStack) { clickHandler.accept(this) }
 
-    fun open() {
-        inventory.clear()
+    private fun firstEmpty(): Int {
+        for (slot in 0..inventory.size) {
+            if (buttons[slot] == null) {
+                return slot
+            }
+        }
+        return -1
+    }
+
+    @JvmOverloads
+    fun open(clear: Boolean = true) {
+        if (clear) {
+            clear()
+        }
+        builder(this)
         buttons.forEach { (slot, button) ->
             inventory.setItem(slot, button.itemStack)
         }
@@ -164,22 +186,20 @@ data class InventoryButton(
 
 val InventoryClickEvent.player: Player get() = whoClicked as Player
 
+@JvmOverloads
 @JvmName("PluginInventoryMenu")
 fun Plugin.InventoryMenu(player: Player, inventoryType: InventoryType, title: String, builder: InventoryMenu.() -> Unit = {}): InventoryMenu =
         InventoryMenu(this, player, inventoryType, title, builder)
 
+@JvmOverloads
 @JvmName("PluginInventoryMenu")
 fun Plugin.InventoryMenu(player: Player, rows: Int, title: String, builder: InventoryMenu.() -> Unit = {}): InventoryMenu =
         InventoryMenu(this, player, rows, title, builder)
 
-fun InventoryMenu(plugin: Plugin, player: Player, inventoryType: InventoryType, title: String, builder: InventoryMenu.() -> Unit = {}): InventoryMenu =
-        InventoryMenu(plugin, player, inventoryType, title).apply(builder)
-
-fun InventoryMenu(plugin: Plugin, player: Player, rows: Int, title: String, builder: InventoryMenu.() -> Unit = {}): InventoryMenu =
-        InventoryMenu(plugin, player, rows, title).apply(builder)
-
+@JvmOverloads
 fun InventoryMenu.InventoryMenu(inventoryType: InventoryType, title: String, builder: InventoryMenu.() -> Unit = {}): InventoryMenu =
         InventoryMenu(plugin, player, inventoryType, title, builder)
 
+@JvmOverloads
 fun InventoryMenu.InventoryMenu(rows: Int, title: String, builder: InventoryMenu.() -> Unit = {}): InventoryMenu =
         InventoryMenu(plugin, player, rows, title, builder)

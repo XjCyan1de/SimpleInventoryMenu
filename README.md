@@ -8,7 +8,7 @@ repositories {
     maven { setUrl("https://jitpack.io/") }
 }
 dependencies {
-    implementation("com.github.xjcyan1de", "SimpleInventoryMenu", "1.2")
+    implementation("com.github.xjcyan1de", "SimpleInventoryMenu", "1.3")
 }
 ```
 
