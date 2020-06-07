@@ -150,8 +150,10 @@ private constructor(
         buttons.clear()
     }
 
+    open fun onClose(event: InventoryCloseEvent) {}
+
     @EventHandler
-    fun onClick(event: InventoryClickEvent) {
+    fun clickEventHandler(event: InventoryClickEvent) {
         val clickedInventory = event.clickedInventory ?: return
         if (clickedInventory.holder != this) return
 
@@ -162,8 +164,9 @@ private constructor(
     }
 
     @EventHandler
-    fun onClose(event: InventoryCloseEvent) {
+    fun closeEventHandler(event: InventoryCloseEvent) {
         if (event.inventory.holder != this) return
+        onClose(event)
 
         HandlerList.unregisterAll(this)
     }
