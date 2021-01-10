@@ -7,9 +7,7 @@ import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.HandlerList
 import org.bukkit.event.Listener
-import org.bukkit.event.inventory.InventoryClickEvent
-import org.bukkit.event.inventory.InventoryCloseEvent
-import org.bukkit.event.inventory.InventoryType
+import org.bukkit.event.inventory.*
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.InventoryHolder
 import org.bukkit.inventory.ItemFlag
@@ -33,7 +31,17 @@ private constructor(
     private val _inventory = if (inventoryType == InventoryType.CHEST)
         Bukkit.createInventory(this, rows * 9, title) else
         Bukkit.createInventory(this, inventoryType, title)
-    private val buttons = HashMap<Int, InventoryButton>()
+    val buttons = HashMap<Int, InventoryButton>()
+
+    private val clickHandlers = ArrayList<InventoryClickEvent.()->Unit>().apply {
+        add { onClick(this) }
+    }
+    private val closeHandlers = ArrayList<InventoryCloseEvent.()->Unit>().apply {
+        add { onClose(this) }
+    }
+    private val dragHandlers = ArrayList<InventoryDragEvent.()->Unit>().apply {
+        add { onDrag(this) }
+    }
 
     override fun getInventory(): Inventory = _inventory
 
@@ -152,23 +160,64 @@ private constructor(
 
     open fun onClose(event: InventoryCloseEvent) {}
 
+    fun onClose(handler: InventoryCloseEvent.()->Unit) = closeHandlers.add(handler)
+
+    open fun onClick(event: InventoryClickEvent) {}
+
+    fun onClick(handler: InventoryClickEvent.()->Unit) = clickHandlers.add(handler)
+
+    open fun onDrag(event: InventoryDragEvent) {}
+
+    fun onDrag(handler: InventoryDragEvent.()->Unit) = dragHandlers.add(handler)
+
     @EventHandler
     fun clickEventHandler(event: InventoryClickEvent) {
-        val clickedInventory = event.clickedInventory ?: return
-        if (clickedInventory.holder != this) return
+        val topInventory = event.player.openInventory.topInventory
+        if (topInventory.holder != this) return
 
-        buttons[event.slot]?.also {
-            event.isCancelled = true
-            it.clickHandler(event)
+        clickHandlers.forEach {
+            try {
+                it(event)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+
+        if (topInventory == event.clickedInventory) {
+            buttons[event.slot]?.also {
+                event.isCancelled = true
+                it.clickHandler(event)
+            }
         }
     }
 
     @EventHandler
     fun closeEventHandler(event: InventoryCloseEvent) {
         if (event.inventory.holder != this) return
-        onClose(event)
+
+        closeHandlers.forEach {
+            try {
+                it(event)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
 
         HandlerList.unregisterAll(this)
+    }
+
+    @EventHandler
+    fun dragEventHandler(event: InventoryDragEvent) {
+        val topInventory = event.player.openInventory.topInventory
+        if (topInventory.holder != this) return
+
+        dragHandlers.forEach {
+            try {
+                it(event)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
 
     private fun createItem(material: Material, text: List<String>): ItemStack {
@@ -187,7 +236,7 @@ data class InventoryButton(
         val clickHandler: InventoryClickEvent.() -> Unit
 )
 
-val InventoryClickEvent.player: Player get() = whoClicked as Player
+val InventoryInteractEvent.player: Player get() = whoClicked as Player
 
 @JvmOverloads
 @JvmName("PluginInventoryMenu")
