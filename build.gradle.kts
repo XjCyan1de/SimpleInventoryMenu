@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "com.github.xjcyan1de"
-version = "1.5"
+version = "1.5.1"
 
 repositories {
     jcenter()

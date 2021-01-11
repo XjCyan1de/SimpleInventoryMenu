@@ -175,6 +175,10 @@ private constructor(
         val topInventory = event.player.openInventory.topInventory
         if (topInventory.holder != this) return
 
+        if (event.isShiftClick || event.clickedInventory == this@InventoryMenu.player.openInventory.topInventory) {
+            event.isCancelled = true
+        }
+
         clickHandlers.forEach {
             try {
                 it(event)
@@ -185,7 +189,6 @@ private constructor(
 
         if (topInventory == event.clickedInventory) {
             buttons[event.slot]?.also {
-                event.isCancelled = true
                 it.clickHandler(event)
             }
         }
